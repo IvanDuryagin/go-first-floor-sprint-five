@@ -13,13 +13,13 @@ func Info(dataset []string, dp DataParser) {
 	for _, v := range dataset {
 		err := dp.Parse(v)
 		if err != nil {
-			log.Printf("Data parsing error: %v", err)
+			log.Printf("Ошибка парсинга данных: %v", err)
 			continue
 		}
 
 		info, err := dp.ActionInfo()
 		if err != nil {
-			log.Printf("Error receiving training information: %v", err)
+			log.Printf("Ошибка получения информации о тренировке: %v", err)
 			continue
 		}
 
