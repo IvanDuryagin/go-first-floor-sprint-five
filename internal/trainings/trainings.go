@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/Yandex-Practicum/tracker/internal/personaldata"
@@ -19,44 +18,36 @@ type Training struct {
 }
 
 func (t *Training) Parse(datastring string) (err error) {
-	parts := strings.Split(datastring, ",")
-	if len(parts) != 3 {
+	var datastringParse []string
+	var current []rune
+	for _, char := range datastring {
+		if char == ',' {
+			datastringParse = append(datastringParse, string(current))
+			current = []rune{}
+		} else {
+			current = append(current, char)
+		}
+	}
+	datastringParse = append(datastringParse, string(current))
+
+	if len(datastringParse) != 3 {
 		return errors.New("invalid data format")
 	}
 
-	rawSteps := parts[0]
-	trimmedSteps := strings.TrimSpace(rawSteps)
-	if rawSteps != trimmedSteps {
-		return errors.New("error: invalid spaces in the number of steps")
+	steps, err := strconv.Atoi(datastringParse[0])
+	if err != nil {
+		return errors.New("invalid steps format, must be integer")
 	}
 
-	steps, err := strconv.Atoi(trimmedSteps)
-	if err != nil {
-		return fmt.Errorf("error converting number of steps:number of steps: %w", err)
-	}
-	if steps <= 0 {
-		return errors.New("error: invalid step count value")
-	}
 	t.Steps = steps
 
-	t.TrainingType = strings.TrimSpace(parts[1])
-	if t.TrainingType == "" {
-		return errors.New("error: empty training type")
-	}
+	t.TrainingType = datastringParse[1]
 
-	rawDuration := parts[2]
-	trimmedDuration := strings.TrimSpace(rawDuration)
-	if rawDuration != trimmedDuration {
-		return errors.New("error: invalid spaces in duration")
-	}
-
-	duration, err := time.ParseDuration(trimmedDuration)
+	duration, err := time.ParseDuration(datastringParse[2])
 	if err != nil {
-		return fmt.Errorf("invalid time data: %w", err)
+		return errors.New("invalid duration format: must be a valid time.Duration (e.g., '1h30m')")
 	}
-	if duration <= 0 {
-		return errors.New("error: invalid duration")
-	}
+
 	t.Duration = duration
 
 	return nil
@@ -84,9 +75,7 @@ func (t Training) ActionInfo() (string, error) {
 
 	durationInHours := t.Duration.Hours()
 
-	result := fmt.Sprintf(
-		"Тип тренировки: %s\nДлительность: %.2f ч.\nДистанция: %.2f км.\nСкорость: %.2f км/ч\nСожгли калорий: %.2f\n",
-		t.TrainingType, durationInHours, distance, meanSpeed, spentCalories)
+	result := fmt.Sprintf("Тип тренировки: %s\nДлительность: %.f ч.\nДистанция: %.2f км.\nСкорость: %.2f км/ч\nСожгли калорий: %.2f", t.TrainingType, durationInHours, distance, meanSpeed, spentCalories)
 
 	return result, nil
 }

@@ -1,8 +1,6 @@
 package actioninfo
 
-import (
-	"log"
-)
+import "log"
 
 type DataParser interface {
 	Parse(string) error
@@ -13,13 +11,13 @@ func Info(dataset []string, dp DataParser) {
 	for _, v := range dataset {
 		err := dp.Parse(v)
 		if err != nil {
-			log.Printf("Data parsing error: %v", err)
+			log.Printf("Parsing error: %v", err)
 			continue
 		}
 
 		info, err := dp.ActionInfo()
 		if err != nil {
-			log.Printf("Error receiving training information: %v", err)
+			log.Printf("Action info error: %v", err)
 			continue
 		}
 

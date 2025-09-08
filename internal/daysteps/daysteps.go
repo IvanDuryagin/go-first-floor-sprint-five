@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/Yandex-Practicum/tracker/internal/personaldata"
@@ -17,36 +16,35 @@ type DaySteps struct {
 	personaldata.Personal
 }
 
-func (ds *DaySteps) Parse(datastring string) error {
-	parts := strings.Split(datastring, ",")
-	if len(parts) != 2 {
+func (ds *DaySteps) Parse(datastring string) (err error) {
+	var datastringParse []string
+	var current []rune
+	for _, char := range datastring {
+		if char == ',' {
+			datastringParse = append(datastringParse, string(current))
+			current = []rune{}
+		} else {
+			current = append(current, char)
+		}
+	}
+	datastringParse = append(datastringParse, string(current))
+
+	if len(datastringParse) != 2 {
 		return errors.New("invalid data format")
 	}
 
-	rawSteps := parts[0]
-	trimmedSteps := strings.TrimSpace(rawSteps)
-
-	if rawSteps != trimmedSteps {
-		return errors.New("error: invalid spaces in the number of steps")
-	}
-
-	steps, err := strconv.Atoi(trimmedSteps)
+	steps, err := strconv.Atoi(datastringParse[0])
 	if err != nil {
-		return errors.New("step count conversion error")
+		return errors.New("invalid steps format, must be integer")
 	}
-	if steps <= 0 {
-		return errors.New("step count must be positive")
-	}
+
 	ds.Steps = steps
 
-	durationStr := strings.TrimSpace(parts[1])
-	duration, err := time.ParseDuration(durationStr)
+	duration, err := time.ParseDuration(datastringParse[1])
 	if err != nil {
-		return errors.New("invalid time format")
+		return errors.New("invalid duration format: must be a valid time.Duration (e.g., '1h30m')")
 	}
-	if duration <= 0 {
-		return errors.New("duration must be positive")
-	}
+
 	ds.Duration = duration
 
 	return nil

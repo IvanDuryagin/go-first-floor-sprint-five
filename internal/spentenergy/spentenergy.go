@@ -1,7 +1,7 @@
 package spentenergy
 
 import (
-	"errors"
+	"fmt"
 	"time"
 )
 
@@ -15,57 +15,51 @@ const (
 
 func WalkingSpentCalories(steps int, weight, height float64, duration time.Duration) (float64, error) {
 	if steps <= 0 {
-		return 0, errors.New("the number of steps must be greater than 0")
+		return 0, fmt.Errorf("invalid steps value: %d (must be positive)", steps)
 	}
 	if weight <= 0 {
-		return 0, errors.New("weight must be greater than 0")
+		return 0, fmt.Errorf("invalid weight value: %.2f (must be positive)", weight)
 	}
 	if height <= 0 {
-		return 0, errors.New("height must be greater than 0")
+		return 0, fmt.Errorf("invalid height value: %.2f (must be positive)", height)
 	}
 	if duration <= 0 {
-		return 0, errors.New("time must be greater than 0")
+		return 0, fmt.Errorf("invalid duration value: %v (must be positive)", duration)
 	}
-
 	meanSpeed := MeanSpeed(steps, height, duration)
 	durationInMinutes := duration.Minutes()
-
-	return ((weight * meanSpeed * durationInMinutes) / minInH) * walkingCaloriesCoefficient, nil
+	calories := (weight * meanSpeed * durationInMinutes) / minInH
+	return calories * walkingCaloriesCoefficient, nil
 }
 
 func RunningSpentCalories(steps int, weight, height float64, duration time.Duration) (float64, error) {
 	if steps <= 0 {
-		return 0, errors.New("number of steps must be greater than 0")
+		return 0, fmt.Errorf("invalid steps value: %d (must be positive)", steps)
 	}
 	if weight <= 0 {
-		return 0, errors.New("weight must be greater than 0")
+		return 0, fmt.Errorf("invalid weight value: %.2f (must be positive)", weight)
 	}
 	if height <= 0 {
-		return 0, errors.New("height must be greater than 0")
+		return 0, fmt.Errorf("invalid height value: %.2f (must be positive)", height)
 	}
 	if duration <= 0 {
-		return 0, errors.New("time must be greater than 0")
+		return 0, fmt.Errorf("invalid duration value: %v (must be positive)", duration)
 	}
-
 	meanSpeed := MeanSpeed(steps, height, duration)
 	durationInMinutes := duration.Minutes()
-
 	return (weight * meanSpeed * durationInMinutes) / minInH, nil
 }
 
 func MeanSpeed(steps int, height float64, duration time.Duration) float64 {
-	if duration <= 0 {
+	if steps == 0 || duration <= 0 {
 		return 0
 	}
-
 	distance := Distance(steps, height)
-
 	return distance / duration.Hours()
 }
 
 func Distance(steps int, height float64) float64 {
-	stepLength := height * stepLengthCoefficient
-	stepsCount := float64(steps) * stepLength
-
-	return stepsCount / mInKm
+	stepLength := float64(height) * stepLengthCoefficient
+	distanceM := float64(steps) * stepLength
+	return distanceM / mInKm
 }
